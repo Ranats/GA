@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.Arrays;
 
 class Gene {
     int[] gene; //=> [0,0,1,1,0,1,....] 遺伝子
@@ -27,21 +28,32 @@ class Gene {
             score += gene[i];
         }
     }
+
+    void mutation(double rate){
+        Random rnd = new Random();
+        if(rnd.nextDouble() < rate){
+            int bit = rnd.nextInt(gene.length);
+            gene[bit] = (gene[bit] == 0) ? 1 : 0;
+        }
+    }
 }
 
 class GA {
     //  個体集合genes
     Gene[] genes;
     int generation;
+    double mutation_rate;
 
     //  個体数と遺伝子長を受け取って個体数分だけループで遺伝子を生成
-    GA(int population, int size){
+    GA(int size, int length){
         //  初期化用の関数
-        genes = new Gene[population];
+        genes = new Gene[size];
 
-        for(int i=0; i<population; i++){
-            genes[i] = new Gene(size);
+        for(int i=0; i<size; i++){
+            genes[i] = new Gene(length);
         }
+
+        mutation_rate = 1.0 / length;
     }
 
     Gene[] select(){
@@ -55,9 +67,9 @@ class GA {
         return parent;
     }
 
-    Gene getElite(){
+    int[] getElite(){
         //  エリート解(並び替えたあとの最初の個体)を取得
-        return genes[0];
+        return Arrays.copyOf(genes[0].gene,genes[0].gene.length);
     }
 
     Gene roulette_select(){
@@ -77,7 +89,7 @@ class GA {
         for(i=0; i<genes.length; i++){
             sum += genes[i].score;
             if(sum > roulette_value){
-              break;
+                break;
             }
         }
         return genes[i];
@@ -89,10 +101,21 @@ class GA {
         Random rn = new Random();
         value = rn.nextInt(g1.gene.length);
 
+        for(int i=0; i<g1.gene.length; i++){
+            if(i < value){
+                g1.gene[i] = g2.gene[i];
+            }else{
+                g2.gene[i] = g1.gene[i];
+            }
+        }
+
     }
 
     void mutation(){
         //  突然変異
+        for(Gene g : genes){
+            g.mutation(mutation_rate);
+        }
 
     }
 
@@ -114,21 +137,43 @@ class GA {
 }
 
 public class Main {
-
-    public static void main(String[] args) {
+        public static void main(String[] args) {
         //  個体数10，遺伝子長100の個体群を生成
         GA ga = new GA(10,100);
         ga.sort();
-        for(int i = 0; i < 10; i++)
-        {
+        for(int i = 0; i < 10; i++) {
             System.out.println(ga.genes[i].score);
         }
 
-        Gene[] parent = ga.select();
-        for(int i = 0; i < 10; i++)
-        {
-            System.out.println(parent);
-        }
+            while(ga.genes[0].score < 100) {
 
+
+                int[] elite = ga.getElite();
+                Gene[] parent = ga.select();
+                for (int i = 0; i < 10; i++) {
+                //    System.out.println(Arrays.toString(parent[i].gene));
+                }
+                Random rnd = new Random();
+                for (int i = 0; i < ga.genes.length / 2; i++) {
+                    Gene pair1 = ga.genes[rnd.nextInt(ga.genes.length)];
+                    Gene pair2 = ga.genes[rnd.nextInt(ga.genes.length)];
+                    ga.crossover(pair1, pair2);
+                }
+
+                ga.mutation();
+
+                ga.genes[ga.genes.length - 1].gene = elite;
+
+                for (Gene g : ga.genes) {
+                    g.evaluate();
+                }
+
+                ga.sort();
+
+                System.out.println(ga.genes[0].score);
+//                for (int i = 0; i < 10; i++) {
+// System.out.println(ga.genes[i].score);
+//                }
+            }
     }
 }
