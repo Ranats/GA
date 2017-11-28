@@ -1,5 +1,7 @@
-require "./GA.rb"
+require "../Ruby/RealCodedGA.rb"
 
-ga = GA.new(individual_size:50, finish_population:50)
+ga = RealCodedGA.new(population_size:50, finish_population:50, gene_size:100)
 
-
+1.times do |i|
+  ga.run(i)
+end
