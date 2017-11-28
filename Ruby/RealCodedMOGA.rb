@@ -47,7 +47,7 @@ class Gene
   end
 end
 
-class RealCodedGA
+class RealCodedMOGA
   def initialize(population_size: 50, finish_population: 50, gene_size:100)
     @population_size = 3 * gene_size #population_size
     @finish_population = finish_population
@@ -173,7 +173,7 @@ class RealCodedGA
     @population.push(parent)
   end
 
-  
+
   def evolve_dominated(parent,child, elite)
     parent.shuffle!
     child += parent.slice!(0,2)
